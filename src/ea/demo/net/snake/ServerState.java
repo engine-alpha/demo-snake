@@ -2,7 +2,7 @@ package ea.demo.net.snake;
 
 import ea.*;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class ServerState extends GameState implements VerbindungHergestelltReagierbar, Empfaenger {
@@ -11,14 +11,16 @@ public class ServerState extends GameState implements VerbindungHergestelltReagi
 	private Text countText;
 	private Server server;
 	private Main main;
+	private ServerPlayState next;
 
 	public ServerState (Main main) {
-		this.players = new HashMap<>();
+		this.players = new LinkedHashMap<>();
 		this.participantManager = new ParticipantManager();
 		this.server = new Server(1337);
 		this.server.netzwerkSichtbarkeit(true);
 		this.server.setVerbindungHergestelltReagierbar(this);
 		this.server.globalenEmpfaengerSetzen(this);
+		this.server.setBroadcast(false);
 		this.main = main;
 
 		Figur loader = new Figur(20, 275, "res/loader.eaf");
@@ -42,9 +44,9 @@ public class ServerState extends GameState implements VerbindungHergestelltReagi
 	public void onKeyDown (int code) {
 		int count = participantManager.count();
 
-		if (count > 0 && code == Taste.ENTER) {
+		if (count > 0 && code == Taste.ENTER && next == null) {
 			server.netzwerkSichtbarkeit(false);
-			main.setState(new ServerPlayState(main, server, players));
+			next = new ServerPlayState(main, server);
 		}
 
 		if (code == Taste.LEERTASTE) {
@@ -63,12 +65,17 @@ public class ServerState extends GameState implements VerbindungHergestelltReagi
 	@Override
 	public void empfangeString (String s) {
 		if (s.equals("ready")) {
-			int x = (int) (Math.random() * 40);
-			int y = (int) (Math.random() * 30);
+			int x = (int) (Math.random() * 30) + 5;
+			int y = (int) (Math.random() * 20) + 5;
 			int color = players.size() * 60 % 255;
 			NetzwerkVerbindung verbindung = server.naechsteVerbindungAusgeben();
 			players.put(verbindung, new int[] {x, y, color});
 			verbindung.sendeString("initial_info:" + color);
+
+			if (next != null) {
+				main.setState(next);
+				next.init(players);
+			}
 		}
 	}
 

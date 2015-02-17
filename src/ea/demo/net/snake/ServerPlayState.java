@@ -11,12 +11,14 @@ public class ServerPlayState extends PlayState implements Ticker {
 	private int alive;
 	private int step;
 
-	public ServerPlayState (Main main, Server server, Map<NetzwerkVerbindung, int[]> players) {
+	public ServerPlayState (Main main, Server server) {
 		super(main, "127.0.0.1");
 		this.server = server;
-		this.server.setBroadcast(false);
-		this.server.globalenEmpfaengerSetzen(new ServerHandler());
 		this.connections = new HashMap<>();
+	}
+
+	public void init (Map<NetzwerkVerbindung, int[]> players) {
+		this.server.globalenEmpfaengerSetzen(new ServerHandler());
 
 		String payload = "start:" + players.size();
 
@@ -36,7 +38,13 @@ public class ServerPlayState extends PlayState implements Ticker {
 	@Override
 	public void tick () {
 		boolean add = step++ % 30 == 0;
-		String payload = (add ? "supdate:" : "update:") + connections.size();
+
+		if (step <= 30) {
+			server.sendeString("cd:" + (30 - step));
+			return;
+		}
+
+		String payload = "";
 
 		for (NetzwerkVerbindung conn : connections.keySet()) {
 			Snake snake = connections.get(conn);
@@ -66,10 +74,10 @@ public class ServerPlayState extends PlayState implements Ticker {
 				}
 			}
 
-			payload += ":" + x + ":" + y + ":" + snake.isAlive();
+			payload = ":" + x + ":" + y + ":" + snake.isAlive() + payload;
 		}
 
-		server.sendeString(payload);
+		server.sendeString((add ? "supdate:" : "update:") + connections.size() + payload);
 	}
 
 	private class ServerHandler implements Empfaenger {

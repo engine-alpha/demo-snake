@@ -17,12 +17,12 @@ public class PlayState extends GameState implements Empfaenger {
 		this.main = main;
 		this.client = new Client(ip, 1337);
 		this.client.empfaengerHinzufuegen(this);
-		this.client.sendeString("ready");
 		this.waitingText = new Text("waiting for host to start game", 200, 130, "Wellbutrin", 22);
 		this.waitingText.setAnker(Text.Anker.MITTE);
 		this.waitingText.setzeFarbe("grau");
 		this.add(waitingText);
 		this.running = true;
+		this.client.sendeString("ready");
 	}
 
 	@Override
@@ -69,7 +69,6 @@ public class PlayState extends GameState implements Empfaenger {
 
 				break;
 			case "start":
-				this.entfernen(this.waitingText);
 				this.players = new ArrayList<>();
 
 				args = data[1].split(":");
@@ -112,8 +111,17 @@ public class PlayState extends GameState implements Empfaenger {
 				text.setAnker(Text.Anker.MITTE);
 
 				add(blend, text);
-
 				running = false;
+				break;
+
+			case "cd":
+				int cd = Integer.parseInt(data[1]);
+
+				if (cd == 0) {
+					this.entfernen(this.waitingText);
+				} else {
+					this.waitingText.setzeInhalt(cd + "");
+				}
 
 				break;
 		}
