@@ -4,25 +4,25 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class ParticipantManager {
-	private List<Participant> participants;
+    private List<Participant> participants;
 
-	public ParticipantManager () {
-		participants = new LinkedList<>();
-	}
+    public ParticipantManager() {
+        participants = new LinkedList<>();
+    }
 
-	public ParticipantManager add (Participant participant) {
-		participants.add(participant);
+    public ParticipantManager add(Participant participant) {
+        participants.add(participant);
 
-		return this;
-	}
+        return this;
+    }
 
-	public ParticipantManager remove (Participant participant) {
-		participants.remove(participant);
+    public ParticipantManager remove(Participant participant) {
+        participants.remove(participant);
 
-		return this;
-	}
+        return this;
+    }
 
-	public int count () {
-		return participants.size();
-	}
+    public int count() {
+        return participants.size();
+    }
 }
